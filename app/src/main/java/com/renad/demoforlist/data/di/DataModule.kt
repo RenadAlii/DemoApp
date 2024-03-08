@@ -16,12 +16,10 @@ class DataModule {
 
 
     @Provides
-    @Singleton
     fun provideRecipesDataSource(recipesRemoteDataSourceImp: RecipesRemoteDataSourceImp): RecipesDataSource =
         recipesRemoteDataSourceImp
 
    @Provides
-    @Singleton
     fun provideRecipesRepository(recipesRepositoryImp: RecipesRepositoryImp): RecipesRepository =
        recipesRepositoryImp
 
