@@ -1,60 +1,84 @@
 package com.renad.demoforlist.data
 
-
 import com.appmattus.kotlinfixture.kotlinFixture
-import com.renad.demoforlist.core.utils.Response
+import com.renad.demoforlist.data.mapper.RecipeMapper
+import com.renad.demoforlist.data.mapper.RecipesMapper
 import com.renad.demoforlist.data.model.RecipeModel
 import com.renad.demoforlist.data.model.RecipesModel
 import com.renad.demoforlist.data.source.RecipesDataSource
+import com.renad.demoforlist.domain.enities.Recipe
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 
 class RecipesRepositoryImpTest {
-
-    private lateinit var recipesDataSource: RecipesDataSource
-    private lateinit var recipesRepositoryImp: RecipesRepositoryImp
-
     val fixture = kotlinFixture()
-    val recipe = fixture<RecipeModel>().copy(
-        vegetarian = false,
-        vegan = false,
-        glutenFree = true,
-        id = 1,
-        title = "Test Recipe",
-        readyInMinutes = 30,
-        servings = 4,
-        image = "url",
-        summary = "",
-    )
 
-    val recipes = fixture<RecipesModel>().copy(listOf(recipe))
+    private lateinit var recipesRepository: RecipesRepositoryImp
+    private val recipesDataSource: RecipesDataSource = mockk()
+    private val recipeMapper: RecipeMapper = mockk()
+    private val recipesMapper: RecipesMapper = mockk()
+
     @Before
     fun setUp() {
-        recipesDataSource = mockk(relaxed = true)
-        recipesRepositoryImp = RecipesRepositoryImp(recipesDataSource)
+        recipesRepository = RecipesRepositoryImp(recipesDataSource, recipeMapper, recipesMapper)
     }
 
     @Test
-    fun `getRandomRecipes calls data source and returns success response`() = runTest {
-        coEvery { recipesDataSource.getRandomRecipes() } returns flow { emit(Response.Success((recipes))) }
-        val result = recipesRepositoryImp.getRandomRecipes()
-
-        result.collect { response ->
-            val isCorrectResponse = when (response) {
-                is Response.Success -> response.data?.let { it.recipes.isNotEmpty() } ?: false
-                else -> false
-            }
-            assertTrue(isCorrectResponse)
+    fun `getRandomRecipes returns expected data`() =
+        runTest {
+            val dataSourceRecipes = fixture<List<RecipeModel>>()
+            val domainRecipes = fixture<List<Recipe>>()
+            coEvery { recipesDataSource.getRandomRecipes() } returns flow { emit(RecipesModel(dataSourceRecipes)) }
+            coEvery { recipesMapper.map(RecipesModel(dataSourceRecipes)) } returns domainRecipes
+            val result = recipesRepository.getRandomRecipes().first()
+            assertEquals(domainRecipes, result)
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `getRandomRecipes handles exceptions`() =
+        runTest {
+            coEvery { recipesDataSource.getRandomRecipes() } throws IllegalStateException()
+            advanceUntilIdle()
+            assertThrows(IllegalStateException::class.java) {
+                runBlocking {
+                    recipesRepository.getRandomRecipes().first()
+                }
+            }
+        }
 
-    }
+    @Test
+    fun `getRecipeById returns expected data`() =
+        runTest {
+            val id = fixture<String>()
+            val dataSourceRecipe = fixture<RecipeModel>()
+            val domainRecipe = fixture<Recipe>()
+            coEvery { recipesDataSource.getRecipeById(id) } returns flow { emit(dataSourceRecipe) }
+            coEvery { recipeMapper.map(dataSourceRecipe) } returns domainRecipe
+            advanceUntilIdle()
+            val result = recipesRepository.getRecipeById(id).first()
+            assertEquals(domainRecipe, result)
+        }
+
+    @Test
+    fun `getRecipeById handles exceptions`() =
+        runTest {
+            val id = fixture<String>()
+            coEvery { recipesDataSource.getRecipeById(id) } throws IllegalStateException()
+            assertThrows(IllegalStateException::class.java) {
+                runBlocking {
+                    recipesRepository.getRecipeById(id).first()
+                }
+            }
+        }
 }

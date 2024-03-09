@@ -1,7 +1,6 @@
 package com.renad.demoforlist.ui.recipe.recipes
 
 import com.renad.demoforlist.core.utils.SingleEvent
-import com.renad.demoforlist.data.model.RecipeModel
 import com.renad.demoforlist.domain.enities.Recipe
 
 data class RecipesState(

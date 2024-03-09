@@ -5,7 +5,6 @@ import com.renad.demoforlist.data.model.RecipesModel
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-
 interface RecipeApiService {
     // Get Random list of Recipes.
     @GET("/recipes/random?number=10&apiKey=${""}")

@@ -3,7 +3,6 @@ package com.renad.demoforlist.ui.recipe.recipes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.renad.demoforlist.core.di.IoDispatchers
-import com.renad.demoforlist.core.utils.Response
 import com.renad.demoforlist.core.utils.SingleEvent
 import com.renad.demoforlist.core.utils.handleNetworkThrowable
 import com.renad.demoforlist.domain.usecase.RecipesUseCase
@@ -20,7 +19,12 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class RecipesViewModel @Inject constructor(private val useCase: RecipesUseCase, @IoDispatchers private val dispatcher: CoroutineDispatcher, ) : ViewModel() {
+class RecipesViewModel
+    @Inject
+    constructor(
+        private val useCase: RecipesUseCase,
+        @IoDispatchers private val dispatcher: CoroutineDispatcher,
+    ) : ViewModel() {
         private val _uiState = MutableStateFlow(RecipesState())
 
         val uiState get() = _uiState.asStateFlow()
@@ -31,18 +35,18 @@ class RecipesViewModel @Inject constructor(private val useCase: RecipesUseCase, 
             }
         }
 
-    private fun loadRecipes() = useCase.invoke().onStart {
-        _uiState.update { state ->
-            state.copy(isLoading = true, recipesLoaded = true)
-        }
-    }.map {
-        _uiState.update { state ->
-            state.copy(recipes = it, isLoading = false)
-        }
-    }.catch {error ->
-        _uiState.update { state ->
-            state.copy(errorMsg = SingleEvent(error.handleNetworkThrowable()), isLoading = false)
-        }
-    }.flowOn(dispatcher).launchIn(viewModelScope)
-
-}
+        private fun loadRecipes() =
+            useCase.invoke().onStart {
+                _uiState.update { state ->
+                    state.copy(isLoading = true, recipesLoaded = true)
+                }
+            }.map {
+                _uiState.update { state ->
+                    state.copy(recipes = it, isLoading = false)
+                }
+            }.catch { error ->
+                _uiState.update { state ->
+                    state.copy(errorMsg = SingleEvent(error.handleNetworkThrowable()), isLoading = false)
+                }
+            }.flowOn(dispatcher).launchIn(viewModelScope)
+    }

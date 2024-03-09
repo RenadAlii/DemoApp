@@ -8,7 +8,7 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-fun  Throwable.handleNetworkThrowable(): String {
+fun Throwable.handleNetworkThrowable(): String {
     var error = ""
 
     when (this) {
