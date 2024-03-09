@@ -8,10 +8,10 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-fun <T> handleNetworkThrowable(e: Throwable): Response<T> {
+fun  Throwable.handleNetworkThrowable(): String {
     var error = ""
 
-    when (e) {
+    when (this) {
         is SocketTimeoutException -> {
             error = "Connection error!"
         }
@@ -22,7 +22,7 @@ fun <T> handleNetworkThrowable(e: Throwable): Response<T> {
             error = "No internet access!"
         }
         is HttpException -> {
-            when (e.code()) {
+            when (code()) {
                 HttpURLConnection.HTTP_BAD_GATEWAY -> {
                     error = NetworkErrorException("Internal error!").errorMessage
                 }
@@ -36,7 +36,7 @@ fun <T> handleNetworkThrowable(e: Throwable): Response<T> {
                     error = "Access denied!"
                 }
                 else -> {
-                    error = parseException(e).errorMessage
+                    error = parseException(this).errorMessage
                 }
             }
         }
@@ -45,7 +45,7 @@ fun <T> handleNetworkThrowable(e: Throwable): Response<T> {
         }
     }
 
-    return Response.Failure(error)
+    return error
 }
 
 open class NetworkErrorException(

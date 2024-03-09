@@ -8,11 +8,11 @@ import retrofit2.http.Path
 
 interface RecipeApiService {
     // Get Random list of Recipes.
-    @GET("/recipes/random?number=10&apiKey=${BuildConfig.API_KEY}")
+    @GET("/recipes/random?number=10&apiKey=${""}")
     suspend fun getRandomRecipes(): RecipesModel
 
     // Get Recipe by id.
-    @GET("/recipes/{id}/information?includeNutrition=false&apiKey=${BuildConfig.API_KEY}")
+    @GET("/recipes/{id}/information?includeNutrition=false&apiKey=${""}")
     suspend fun getRecipe(
         @Path("id") id: String,
     ): RecipeModel

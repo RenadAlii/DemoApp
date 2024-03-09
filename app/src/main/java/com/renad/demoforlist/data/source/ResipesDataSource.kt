@@ -6,7 +6,7 @@ import com.renad.demoforlist.data.model.RecipesModel
 import kotlinx.coroutines.flow.Flow
 
 interface RecipesDataSource {
-    fun getRandomRecipes(): Flow<Response<RecipesModel>>
+    fun getRandomRecipes(): Flow<RecipesModel>
 
-    fun getRecipeById(id: String): Flow<Response<RecipeModel>>
+    fun getRecipeById(id: String): Flow<RecipeModel>
 }

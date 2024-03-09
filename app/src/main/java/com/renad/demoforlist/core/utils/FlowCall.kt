@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.callbackFlow
 fun <T> flowCall(block: suspend () -> T) =
     callbackFlow {
         try {
-            this.send(Response.Success(block()))
+            this.send((block()))
         } catch (e: Throwable) {
-            this.trySend(handleNetworkThrowable(e))
+            this.trySend(e)
         }
         awaitClose { println("flowCall closed!") }
     }
