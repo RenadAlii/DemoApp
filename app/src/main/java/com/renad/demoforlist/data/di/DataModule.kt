@@ -8,20 +8,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import javax.inject.Singleton
 
 @Module
 @InstallIn(ViewModelComponent::class)
 class DataModule {
-
+    @Provides
+    fun provideRecipesDataSource(recipesRemoteDataSourceImp: RecipesRemoteDataSourceImp): RecipesDataSource = recipesRemoteDataSourceImp
 
     @Provides
-    fun provideRecipesDataSource(recipesRemoteDataSourceImp: RecipesRemoteDataSourceImp): RecipesDataSource =
-        recipesRemoteDataSourceImp
-
-   @Provides
-    fun provideRecipesRepository(recipesRepositoryImp: RecipesRepositoryImp): RecipesRepository =
-       recipesRepositoryImp
-
-
+    fun provideRecipesRepository(recipesRepositoryImp: RecipesRepositoryImp): RecipesRepository = recipesRepositoryImp
 }

@@ -19,7 +19,6 @@ fun Loader(modifier: Modifier = Modifier) {
         composition = composition,
         progress = { progress },
         modifier = modifier,
-        alignment = Alignment.Center
-
+        alignment = Alignment.Center,
     )
 }

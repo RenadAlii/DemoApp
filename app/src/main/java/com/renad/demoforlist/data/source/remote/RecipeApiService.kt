@@ -6,14 +6,15 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 const val API_KEY = "d8244f44357a41c285d9f686ebe47ed2"
-interface RecipeApiService {
 
-    //Get Random list of Recipes.
+interface RecipeApiService {
+    // Get Random list of Recipes.
     @GET("/recipes/random?number=10&apiKey=${API_KEY}")
     suspend fun getRandomRecipes(): RecipesModel
 
-    //Get Recipe by id.
+    // Get Recipe by id.
     @GET("/recipes/{id}/information?includeNutrition=false&apiKey=${API_KEY}")
-    suspend fun getRecipe(@Path("id") id: String): RecipeModel
-
+    suspend fun getRecipe(
+        @Path("id") id: String,
+    ): RecipeModel
 }

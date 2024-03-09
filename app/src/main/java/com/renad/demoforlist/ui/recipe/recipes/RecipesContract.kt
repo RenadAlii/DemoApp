@@ -13,4 +13,3 @@ data class RecipesState(
 sealed class RecipesScreenEvent {
     object LoadRecipes : RecipesScreenEvent()
 }
-

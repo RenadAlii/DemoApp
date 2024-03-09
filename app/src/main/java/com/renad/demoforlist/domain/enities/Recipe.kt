@@ -1,6 +1,5 @@
 package com.renad.demoforlist.domain.enities
 
-
 data class Recipe(
     val vegetarian: Boolean,
     val vegan: Boolean,

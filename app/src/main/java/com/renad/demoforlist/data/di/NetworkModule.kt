@@ -17,17 +17,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-
     @Provides
     @Singleton
     fun provideMoshiConverterFactory(): MoshiConverterFactory =
         MoshiConverterFactory.create(
             Moshi.Builder()
                 .addLast(KotlinJsonAdapterFactory())
-                .build()
+                .build(),
         )
-
 
     @Provides
     @Singleton
@@ -36,25 +33,23 @@ object NetworkModule {
             .Builder()
             .addNetworkInterceptor(
                 HttpLoggingInterceptor().setLevel(
-                    HttpLoggingInterceptor.Level.BODY
-                )
+                    HttpLoggingInterceptor.Level.BODY,
+                ),
             ).build()
-
 
     @Provides
     @Singleton
     fun provideRetrofitClientForWeatherApi(
         okHttp: OkHttpClient,
         moshiConverterFactory: MoshiConverterFactory,
-    ): Retrofit = Retrofit.Builder()
-        .addConverterFactory(moshiConverterFactory)
-        .client(okHttp)
-        .baseUrl("https://api.spoonacular.com/")
-        .build()
+    ): Retrofit =
+        Retrofit.Builder()
+            .addConverterFactory(moshiConverterFactory)
+            .client(okHttp)
+            .baseUrl("https://api.spoonacular.com/")
+            .build()
 
     @Provides
     @Singleton
-    fun provideWeatherService(serviceBuilder: ServiceBuilder): RecipeApiService =
-        serviceBuilder.buildService(RecipeApiService::class.java)
-
+    fun provideWeatherService(serviceBuilder: ServiceBuilder): RecipeApiService = serviceBuilder.buildService(RecipeApiService::class.java)
 }

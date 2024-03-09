@@ -2,6 +2,7 @@ package com.renad.demoforlist.ui.recipe.recipes
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,23 +35,27 @@ import com.renad.demoforlist.ui.components.Loader
 import kotlinx.coroutines.launch
 
 @Composable
-fun RecipesScreen(recipesViewModel: RecipesViewModel = hiltViewModel(), navigateToRecipeDetails: (id: String) -> Unit) {
+fun RecipesScreen(
+    modifier: Modifier = Modifier,
+    recipesViewModel: RecipesViewModel = hiltViewModel(),
+    navigateToRecipeDetails: (id: Int) -> Unit,
+) {
     val state by recipesViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.errorMsg) {
         state.errorMsg?.handel {
             launch {
-            snackbarHostState.showSnackbar(
-                message = it,
-                withDismissAction = true,
-                duration = SnackbarDuration.Short,
-            )
+                snackbarHostState.showSnackbar(
+                    message = it,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short,
+                )
             }
         }
     }
-    LaunchedEffect(state.isLoading) {
-       recipesViewModel.onEvent(RecipesScreenEvent.LoadRecipes)
+    LaunchedEffect(!state.recipesLoaded) {
+        recipesViewModel.onEvent(RecipesScreenEvent.LoadRecipes)
     }
     Scaffold(
         snackbarHost = {
@@ -59,44 +65,55 @@ fun RecipesScreen(recipesViewModel: RecipesViewModel = hiltViewModel(), navigate
                     onDismiss = {
                         snackbarHostState.currentSnackbarData?.dismiss()
                     },
-                    modifier = Modifier.align(Alignment.TopCenter),
+                    modifier = modifier.align(Alignment.TopCenter),
                 )
             }
         },
         content = { contentPadding ->
             Column(modifier = Modifier.padding(contentPadding)) {
-
-
-            AnimatedVisibility(visible = state.isLoading) {
-                Loader()
-            }
-            AnimatedVisibility(visible = state.recipes.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = androidx.viewpager2.R.dimen.fastscroll_default_thickness)),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    items(items = state.recipes, key = { it.id }){
-                        RecipeItem(title = it.title, imageUrl = it.image)
+                AnimatedVisibility(visible = state.isLoading) {
+                    Loader()
+                }
+                AnimatedVisibility(visible = state.recipes.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier.padding(8.dp),
+                        verticalArrangement =
+                            Arrangement.spacedBy(
+                                dimensionResource(id = androidx.viewpager2.R.dimen.fastscroll_default_thickness),
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        items(items = state.recipes, key = { it.id }) {
+                            RecipeItem(title = it.title, imageUrl = it.image, id = it.id, onClickItem = navigateToRecipeDetails)
+                        }
                     }
                 }
             }
-        } },
+        },
     )
-
-
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun RecipeItem(imageUrl: String, title: String){
-        Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.tertiaryContainer), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+fun RecipeItem(
+    imageUrl: String,
+    title: String,
+    id: Int,
+    onClickItem: (Int) -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.tertiaryContainer).clickable {
+                onClickItem(id)
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
         GlideImage(
             model = imageUrl,
             contentDescription = title,
             modifier = Modifier.padding(dimensionResource(id = androidx.viewpager2.R.dimen.fastscroll_default_thickness)),
         )
-        Text(text = title, style = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.Center))
+        Text(text = title, style = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.Center, fontWeight = FontWeight.Bold))
     }
-    }
-
+}

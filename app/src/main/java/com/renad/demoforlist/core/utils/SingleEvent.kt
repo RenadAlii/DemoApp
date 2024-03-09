@@ -3,7 +3,6 @@ package com.renad.demoforlist.core.utils
 data class SingleEvent<out T>(
     val value: T,
 ) {
-
     var isHandled: Boolean = false
         private set
 

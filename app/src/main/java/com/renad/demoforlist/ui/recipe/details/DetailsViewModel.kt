@@ -1,11 +1,11 @@
-package com.renad.demoforlist.ui.recipe.recipes
+package com.renad.demoforlist.ui.recipe.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.renad.demoforlist.core.di.IoDispatchers
 import com.renad.demoforlist.core.utils.Response
 import com.renad.demoforlist.core.utils.SingleEvent
-import com.renad.demoforlist.domain.usecase.RecipesUseCase
+import com.renad.demoforlist.domain.usecase.RecipeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,38 +17,45 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class RecipesViewModel
+class DetailsViewModel
     @Inject
     constructor(
-        private val useCase: RecipesUseCase,
+        private val useCase: RecipeUseCase,
         @IoDispatchers private val dispatcher: CoroutineDispatcher,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow(RecipesState())
+        private val _uiState = MutableStateFlow(DetailsState())
 
         val uiState get() = _uiState.asStateFlow()
 
-        fun onEvent(event: RecipesScreenEvent) {
+        fun onEvent(event: DetailsScreenEvent) {
             when (event) {
-                RecipesScreenEvent.LoadRecipes -> loadRecipes()
+                is DetailsScreenEvent.LoadDetails -> loadDetails(event.id)
             }
         }
 
-        private fun loadRecipes() {
-            useCase.invoke().map {
+        private fun loadDetails(id: Int) {
+            useCase.invoke(id).map {
                 when (it) {
                     is Response.Failure -> {
                         _uiState.update { state ->
-                            state.copy(errorMsg = SingleEvent(it.message), isLoading = false, recipesLoaded = true)
+                            state.copy(errorMsg = SingleEvent(it.message), isLoading = false, detailsLoaded = true)
                         }
                     }
                     is Response.Success -> {
+                        val recipe = it.data
                         _uiState.update { state ->
-                            state.copy(recipes = it.data?.recipes ?: emptyList(), isLoading = false, recipesLoaded = true)
+                            state.copy(
+                                title = recipe?.title ?: "",
+                                description = recipe?.summary ?: "",
+                                imageUrl = recipe?.image ?: "",
+                                isLoading = false,
+                                detailsLoaded = true,
+                            )
                         }
                     }
                     is Response.Loading -> {
                         _uiState.update { state ->
-                            state.copy(isLoading = true, recipesLoaded = true)
+                            state.copy(isLoading = true, detailsLoaded = true)
                         }
                     }
                 }
